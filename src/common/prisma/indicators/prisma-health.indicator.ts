@@ -19,7 +19,9 @@ export class PrismaHealthIndicator extends HealthIndicator {
     } catch (error) {
       throw new HealthCheckError(
         `${key} failed`,
-        this.getStatus(key, false, { message: error.message }),
+        this.getStatus(key, false, {
+          message: error instanceof Error ? error.message : String(error),
+        }),
       );
     }
   }

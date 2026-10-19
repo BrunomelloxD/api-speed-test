@@ -1,12 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDate, IsOptional } from 'class-validator';
 import { PaginationDto } from 'src/common/dtos/request/pagination.dto';
 
 export class GetAllSpeedTestDto extends PaginationDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Filter results from this date',
-    required: false,
     example: '2026-01-01',
   })
   @IsOptional()
@@ -14,9 +13,8 @@ export class GetAllSpeedTestDto extends PaginationDto {
   @Type(() => Date)
   date_from?: Date;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Filter results until this date',
-    required: false,
     example: '2026-12-31',
   })
   @IsOptional()

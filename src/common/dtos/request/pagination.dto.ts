@@ -1,14 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, Max, Min } from 'class-validator';
 
 export class PaginationDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Page number',
     example: 1,
     minimum: 1,
     default: 1,
-    required: false,
   })
   @IsOptional()
   @Type(() => Number)
@@ -16,12 +15,11 @@ export class PaginationDto {
   @Min(1)
   page?: number = 1;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Number of items per page',
     example: 10,
     minimum: 1,
     default: 10,
-    required: false,
   })
   @IsOptional()
   @Type(() => Number)
@@ -30,10 +28,9 @@ export class PaginationDto {
   @Max(100)
   limit?: number = 10;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Search query',
     example: 'John Doe',
-    required: false,
   })
   @IsOptional()
   search?: string;

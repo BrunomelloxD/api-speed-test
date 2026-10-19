@@ -1,5 +1,5 @@
 import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateSpeedTestDto {
   @ApiProperty({ example: 85.42, description: 'Download speed in Mbps' })
@@ -17,23 +17,23 @@ export class CreateSpeedTestDto {
   @Min(0)
   ping: number;
 
-  @ApiProperty({ example: 3.2, description: 'Jitter in ms', required: false })
+  @ApiPropertyOptional({ example: 3.2, description: 'Jitter in ms' })
   @IsOptional()
   @IsNumber()
   @Min(0)
   jitter?: number;
 
-  @ApiProperty({ example: '189.44.12.30', required: false })
+  @ApiPropertyOptional({ example: '189.44.12.30' })
   @IsOptional()
   @IsString()
   ip_address?: string;
 
-  @ApiProperty({ example: 'Vivo Fibra', required: false })
+  @ApiPropertyOptional({ example: 'Vivo Fibra' })
   @IsOptional()
   @IsString()
   isp?: string;
 
-  @ApiProperty({ example: 'São Paulo, BR', required: false })
+  @ApiPropertyOptional({ example: 'São Paulo, BR' })
   @IsOptional()
   @IsString()
   server_location?: string;
