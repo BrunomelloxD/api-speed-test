@@ -12,11 +12,16 @@ import {
   Res,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import { SkipThrottle } from '@nestjs/throttler';
 import { SpeedTestService } from '../services/speed-test.service';
 import { SpeedTestResponseDto } from '../dtos/response/speed-test-response.dto';
 import { PaginatedResponseDto } from 'src/common/dtos/response/paginated-response.dto';
 import { CreateSpeedTestDto } from '../dtos/request/create-speed-test.dto';
 import { GetAllSpeedTestDto } from '../dtos/request/get-all-speed-test.dto';
+import {
+  DEFAULT_DOWNLOAD_BYTES,
+  DownloadQueryDto,
+} from '../dtos/request/download-query.dto';
 import {
   ApiBadRequestResponse,
   ApiBody,
@@ -36,6 +41,7 @@ export class SpeedTestController {
   constructor(private readonly speedTestService: SpeedTestService) {}
 
   @Get('ping')
+  @SkipThrottle()
   @ApiOperation({ summary: 'Ping para medir latência' })
   @ApiOkResponse({ description: 'Pong com timestamp' })
   ping() {
@@ -43,31 +49,30 @@ export class SpeedTestController {
   }
 
   @Get('download')
+  @SkipThrottle()
   @ApiOperation({
     summary: 'Download de blob para medir velocidade de download',
   })
-  @ApiQuery({
-    name: 'size',
-    required: false,
-    type: Number,
-    description: 'Tamanho em MB (padrão: 10, máx: 100)',
-  })
   @ApiOkResponse({ description: 'Blob binário para medição de download' })
-  download(@Query('size') size: string, @Res() res: Response) {
-    const sizeInMb = Math.min(Math.max(Number(size) || 10, 1), 100);
-    const payload = this.speedTestService.generateDownloadPayload(sizeInMb);
+  @ApiBadRequestResponse({ description: 'bytes fora de 1–100.000.000' })
+  download(@Query() query: DownloadQueryDto, @Res() res: Response) {
+    const bytes = query.bytes ?? DEFAULT_DOWNLOAD_BYTES;
+    const stream = this.speedTestService.createDownloadStream(bytes);
 
     res.set({
       'Content-Type': 'application/octet-stream',
-      'Content-Length': payload.length.toString(),
+      'Content-Length': bytes.toString(),
       'Content-Encoding': 'identity',
       'Cache-Control': 'no-store',
     });
 
-    res.send(payload);
+    // The client aborts downloads at the end of the test phase: stop producing bytes.
+    res.on('close', () => stream.destroy());
+    stream.pipe(res);
   }
 
   @Post('upload')
+  @SkipThrottle()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Upload de blob para medir velocidade de upload' })
   @ApiOkResponse({

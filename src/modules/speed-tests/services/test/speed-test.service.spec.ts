@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
+import type { Readable } from 'stream';
 import { SpeedTestService } from '../speed-test.service';
 import { SpeedTestRepository } from '../../repositories/speed-test.repository';
 
@@ -118,11 +119,44 @@ describe('SpeedTestService', () => {
     });
   });
 
-  describe('generateDownloadPayload', () => {
-    it('should generate buffer of correct size', () => {
-      const payload = service.generateDownloadPayload(1);
+  describe('createDownloadStream', () => {
+    const collect = async (stream: Readable): Promise<Buffer[]> => {
+      const chunks: Buffer[] = [];
+      for await (const chunk of stream) chunks.push(chunk as Buffer);
+      return chunks;
+    };
+    const total = (chunks: Buffer[]) =>
+      chunks.reduce((sum, chunk) => sum + chunk.length, 0);
 
-      expect(payload.length).toBe(1 * 1024 * 1024);
+    it('should stream exactly the requested bytes, in 1,000,000-byte chunks', async () => {
+      const chunks = await collect(service.createDownloadStream(2_500_000));
+
+      expect(total(chunks)).toBe(2_500_000);
+      expect(chunks.map((chunk) => chunk.length)).toEqual([
+        1_000_000, 1_000_000, 500_000,
+      ]);
+    });
+
+    it('should stream a single byte', async () => {
+      const chunks = await collect(service.createDownloadStream(1));
+
+      expect(total(chunks)).toBe(1);
+    });
+
+    it('should stream exactly one chunk for 1,000,000 bytes', async () => {
+      const chunks = await collect(service.createDownloadStream(1_000_000));
+
+      expect(chunks.map((chunk) => chunk.length)).toEqual([1_000_000]);
+    });
+
+    it('should reuse one random buffer across requests instead of allocating per request', async () => {
+      const first = await collect(service.createDownloadStream(2_000_000));
+      const second = await collect(service.createDownloadStream(1_500_000));
+      const backing = first[0].buffer;
+
+      for (const chunk of [...first, ...second]) {
+        expect(chunk.buffer).toBe(backing);
+      }
     });
   });
 });

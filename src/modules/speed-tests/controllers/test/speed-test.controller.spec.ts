@@ -19,7 +19,7 @@ const mockService = {
   findAll: jest.fn(),
   findOne: jest.fn(),
   delete: jest.fn(),
-  generateDownloadPayload: jest.fn(),
+  createDownloadStream: jest.fn(),
 };
 
 describe('SpeedTestController', () => {
