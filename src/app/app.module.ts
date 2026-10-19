@@ -6,6 +6,10 @@ import { SpeedTestModule } from 'src/modules/speed-tests/speed-test.module';
 
 @Module({
   imports: [
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 60 }]), PrismaModule, HealthModule, SpeedTestModule]
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 60 }]),
+    PrismaModule,
+    HealthModule,
+    SpeedTestModule,
+  ],
 })
-export class AppModule { }
+export class AppModule {}
