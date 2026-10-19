@@ -4,7 +4,7 @@ import { SpeedTestService } from './services/speed-test.service';
 import { SpeedTestRepository } from './repositories/speed-test.repository';
 
 @Module({
-    controllers: [SpeedTestController],
-    providers: [SpeedTestService, SpeedTestRepository],
+  controllers: [SpeedTestController],
+  providers: [SpeedTestService, SpeedTestRepository],
 })
 export class SpeedTestModule {}
